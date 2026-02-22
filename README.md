@@ -1,215 +1,157 @@
-Cell Analytics Engine – Multithreading vs Multiprocessing
-This project is a small FastAPI-based benchmark service that compares single-threaded, multithreaded, and multiprocess processing of a large CSV dataset (data/cells.csv). It exposes simple HTTP endpoints that trigger different execution modes and return timing, CPU usage, and result statistics so you can observe the impact of multithreading and multiprocessing on a realistic data-processing workload.
-​
+# Cell Analytics Engine: Multithreading vs. Multiprocessing Benchmark
 
-Features
-FastAPI service exposing a clean HTTP API for benchmarking.
-​
+[![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688.svg)](https://fastapi.tiangolo.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Three execution modes:
+A professional performance benchmarking suite built with **FastAPI** to demonstrate and compare different execution models in Python. This project provides a hands-on laboratory for observing how **Multithreading** and **Multiprocessing** impact CPU-intensive data processing tasks.
 
-Single process (no concurrency).
-​
+## 🚀 Project Overview
 
-Multithreading.
-​
+The **Cell Analytics Engine** is designed to process large-scale biological cell datasets (CSV format) and perform complex geometric and volumetric computations. By exposing these operations through a REST API, the project allows developers and researchers to trigger benchmarks and analyze real-time metrics including execution time, CPU utilization, and data integrity.
 
-Multiprocessing.
-​
+### Core Objectives
+- **Demonstrate Concurrency**: Practical implementation of `concurrent.futures` for parallel execution.
+- **Performance Benchmarking**: Comparative analysis of Single-threaded vs. Multi-threaded vs. Multi-processed workloads.
+- **Data Processing**: Efficient handling of large CSV files using `pandas` and `numpy`.
+- **API-First Design**: Easy-to-use endpoints for triggering benchmarks and retrieving results.
 
-Reads and processes cells.csv in configurable chunk sizes.
-​
+---
 
-Returns:
+## 🧠 Multithreading vs. Multiprocessing
 
-Total rows processed.
+This repository highlights the critical differences between the two primary concurrency models in Python:
 
-Execution time in seconds.
+| Feature | **Multithreading** | **Multiprocessing** |
+|:---|:---|:---|
+| **Mechanism** | Multiple threads within a single process. | Multiple independent processes. |
+| **Memory** | Shared memory space between threads. | Separate memory space for each process. |
+| **GIL Impact** | Limited by the Global Interpreter Lock (GIL). | Bypasses the GIL by using separate interpreters. |
+| **Best For** | I/O-bound tasks (API calls, DB queries). | CPU-bound tasks (heavy math, image processing). |
+| **Overhead** | Low (fast thread creation). | High (process creation and IPC overhead). |
 
-CPU usage percentage.
+> **Note:** In this project, you will observe that **Multiprocessing** typically outperforms Multithreading for the mathematical computations performed on the cell data, as it utilizes multiple CPU cores simultaneously.
 
-A checksum of processed rows.
+---
 
-A tabular summary of the run (converted to a JSON-serializable dict).
-​
+## 🛠️ Technologies Used
 
-Convenience endpoint to fetch a sample of processed rows.
-​
+- **Language:** Python 3.10+
+- **Framework:** [FastAPI](https://fastapi.tiangolo.com/) (Asynchronous Web API)
+- **Data Science:** [Pandas](https://pandas.pydata.org/), [NumPy](https://numpy.org/)
+- **Concurrency:** `concurrent.futures` (ThreadPoolExecutor & ProcessPoolExecutor)
+- **Monitoring:** `psutil` (for CPU tracking)
+- **Web Server:** [Uvicorn](https://www.uvicorn.org/)
 
-Project Structure
-text
+---
+
+## 📂 Project Structure
+
+```text
 multithreading_multiprocessing/
 ├── app/
-│   ├── __init__.py
 │   ├── main.py          # FastAPI application entrypoint
-│   ├── api.py           # API routes (endpoints)
-│   ├── services/        # Execution + benchmarking logic (single/thread/process)
-│   └── utils/           # Helper utilities
+│   ├── api.py           # REST API route definitions
+│   ├── services/        # Core business logic
+│   │   ├── compute.py   # Mathematical & analytical functions
+│   │   ├── executor.py  # Concurrency implementation logic
+│   │   └── benchmark.py # Performance measurement utilities
+│   └── utils/           # Data loading and helper utilities
 ├── data/
-│   └── cells.csv        # Input dataset used for benchmarks
+│   └── cells.csv        # Source dataset for analysis
 ├── results/
-│   └── output.json      # Example output / saved benchmark results
-└── requirements.txt
-Note: app/services contains the core logic (executor, benchmark etc.), which are imported in the API layer.
-​
+│   └── output.json      # Sample benchmark results
+└── requirements.txt     # Project dependencies
+```
 
-Installation
-Clone the repository:
+---
 
-bash
-git clone https://github.com/SOUGUR/multithreading_multiprocessing.git
-cd multithreading_multiprocessing
-(Optional) Create and activate a virtual environment:
+## ⚙️ Installation & Setup
 
-bash
-python -m venv venv
-source venv/bin/activate   # Linux/macOS
-# venv\Scripts\activate    # Windows
-Install dependencies (once requirements.txt is populated):
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/SOUGUR/multithreading_multiprocessing.git
+   cd multithreading_multiprocessing
+   ```
 
-bash
-pip install -r requirements.txt
-​
+2. **Environment Setup** (Recommended)
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
 
-Running the API
-From the project root, run the FastAPI app using Uvicorn:
+3. **Install Dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-bash
+---
+
+## 🏃 Running the Project
+
+Start the FastAPI server using Uvicorn:
+
+```bash
 uvicorn app.main:app --reload
-The service will start at http://127.0.0.1:8000 by default.
-​
+```
 
-Interactive API docs (Swagger UI) will be available at http://127.0.0.1:8000/docs.
-​
+- **API Documentation**: Access the interactive Swagger UI at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+- **Base URL**: `http://127.0.0.1:8000`
 
-app.main creates the FastAPI instance and includes the API router defined in app.api under the default root path.
-​
+---
 
-API Endpoints
-1. POST /benchmark
-Runs the benchmark in the requested mode and returns execution statistics.
-​
+## 📊 API Endpoints & Usage
 
-Query parameters
+### 1. Run Performance Benchmark
+`POST /benchmark`
 
-mode (required): one of:
+Executes the analytical workload using the specified mode.
 
-"single" – single-process, no concurrency.
+**Parameters:**
+- `mode` (Required): `single`, `thread`, or `process`.
+- `chunksize` (Optional): Number of rows to process per batch (default: 5000).
 
-"thread" – multithreading.
+**Example Request:**
+```bash
+curl -X POST "http://127.0.0.1:8000/benchmark?mode=process&chunksize=10000"
+```
 
-"process" – multiprocessing.
-​
+### 2. Retrieve Processed Data
+`POST /rows`
 
-chunksize (optional, default: 5000): number of rows per chunk when reading/processing data/cells.csv.
-​
+Returns a preview of the processed cell data.
 
-Example request
+**Example Request:**
+```bash
+curl -X POST "http://127.0.0.1:8000/rows?limit=5"
+```
 
-bash
-curl -X POST "http://127.0.0.1:8000/benchmark?mode=thread&chunksize=5000"
-Response (JSON)
+---
 
-json
+## 📝 Example Output Explanation
+
+When running a benchmark, the API returns a detailed JSON response:
+
+```json
 {
-  "mode": "thread",
+  "mode": "process",
   "rows_processed": 250000,
-  "time_seconds": 1.42,
-  "cpu_percent": 87.5,
-  "checksum": "e3b0c44298...",
-  "summary": {
-    "...": "pandas summary or custom stats as a dict"
-  }
+  "time_seconds": 0.85,
+  "cpu_percent": 92.4,
+  "checksum": "a1b2c3d4...",
+  "summary": { ... }
 }
-Response fields
+```
 
-mode: execution mode requested (single, thread, or process).
-​
+- **time_seconds**: Total duration. Compare this across modes to see efficiency gains.
+- **cpu_percent**: Average CPU load. Multiprocessing will show significantly higher utilization on multi-core systems.
+- **checksum**: Ensures data integrity; the value should be identical across all execution modes.
 
-rows_processed: total number of rows processed across all chunks.
-​
+---
 
-time_seconds: time taken to complete the run.
-​
+## 👨‍💻 Author
+**SOUGUR**
+- GitHub: [@SOUGUR](https://github.com/SOUGUR)
 
-cpu_percent: CPU utilization during the run (as computed in benchmark_execution).
-​
-
-checksum: a checksum over the processed rows, computed by checksum_rows, useful to verify consistency across modes.
-​
-
-summary: a serialized summary (e.g. pandas DataFrame .to_dict()) of the results.
-​
-
-Internally:
-
-The endpoint always reads from data/cells.csv.
-​
-
-It dispatches to:
-
-run_single for mode="single".
-
-run_threaded for mode="thread".
-
-run_processes for mode="process".
-
-All of these are wrapped by benchmark_execution, which measures time, CPU, and collects row data.
-​
-
-2. POST /rows
-Returns a small sample of processed rows using the multiprocessing mode.
-​
-
-Query parameters
-
-limit (optional, default: 20): maximum number of rows to return.
-​
-
-Example request
-
-bash
-curl -X POST "http://127.0.0.1:8000/rows?limit=10"
-Response (JSON)
-
-json
-[
-  {
-    "col1": "value",
-    "col2": 123,
-    "...": "..."
-  },
-  {
-    "col1": "value2",
-    "col2": 456
-  }
-]
-This endpoint:
-
-Runs run_processes("data/cells.csv", chunksize=5000) to process the CSV in multiprocessing mode.
-​
-
-Takes the resulting DataFrame, applies .head(limit), and returns it as a list of dicts via .to_dict(orient="records").
-​
-
-Usage Notes
-data/cells.csv must exist and be reasonably large to see meaningful differences between single, threaded, and process-based execution.
-​
-
-results/output.json can be used as an example storage file for persisting benchmark results, dashboards, or offline analysis.
-​
-
-You can wrap these endpoints in a UI (e.g. simple React dashboard) to visualize time vs CPU across different modes and chunk sizes.
-
-Local Development
-Add Pydantic response models in app/schemas.py to enforce and document response schemas for /benchmark and /rows.
-​
-
-Extend app/services with:
-
-Additional metrics (memory, I/O wait, per-core CPU).
-
-Different workloads (e.g., CPU-bound transforms vs I/O-bound operations).
-​
-
-Integrate proper logging to compare runs over time and environments.
+---
+*Developed for educational purposes to showcase advanced Python concurrency patterns.*
